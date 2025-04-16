@@ -62,7 +62,7 @@ func (d *Dictionary) Add(key, value interface{}) {
 // Get returns the value in the dictionary corresponding to the specified key.
 // If the key is not found then 'nil, false' is returned instead.
 // Keys of type 'string' and '[]byte' are both compared as if they were strings.
-//NOTE: slice keys cannot be used with this method.
+// NOTE: slice keys cannot be used with this method.
 func (d *Dictionary) Get(key interface{}) (interface{}, bool) {
 	// normalize a byte array key to string
 	if keyAsByteArray, ok := key.([]byte); ok {
@@ -227,9 +227,20 @@ func (d *Dictionary) ToStruct(dest interface{}, excludeAnnotationTag string) err
 			}
 			ivf.Set(ns)
 		} else {
-			err = convertAssign(v, ivf.Addr().Interface())
-			if err != nil {
-				return fmt.Errorf("field %q: value %v: %v", f.Name, v, err)
+			// recurse if converting a dictionary to a pointer to struct
+			dst := ivf.Addr()
+			switch v := v.(type) {
+			case Dictionary:
+				if dst.Kind() == reflect.Ptr {
+					if id := reflect.Indirect(dst); id.Kind() == reflect.Struct {
+						v.ToStruct(dst, excludeAnnotationTag)
+					}
+				}
+			default:
+				err = convertAssign(v, dst.Interface())
+				if err != nil {
+					return fmt.Errorf("field %q: value %v: %v", f.Name, v, err)
+				}
 			}
 		}
 
