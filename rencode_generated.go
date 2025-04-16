@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"reflect"
 )
 
 func (r *Encoder) encodeSingle(data interface{}) error {
@@ -349,6 +350,11 @@ func convertAssignInteger(src, dest interface{}) error {
 			return nil
 		case *int64:
 			*dv = int64(sv)
+			return nil
+		}
+	case nil:
+		if reflect.ValueOf(dest).Kind() == reflect.Ptr {
+			dest = src
 			return nil
 		}
 	}

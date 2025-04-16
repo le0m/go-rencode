@@ -22,6 +22,7 @@ package rencode
 import (
 	"errors"
 	"fmt"
+	"reflect"
 )
 
 // ConversionOverflow is returned when the scanned integer would overflow the destination integer
@@ -154,6 +155,11 @@ func convertAssign(src, dest interface{}) error {
 		switch dest := dest.(type) {
 		case *float32:
 			*dest = float32(src)
+			return nil
+		}
+	case nil:
+		if reflect.ValueOf(dest).Kind() == reflect.Ptr {
+			dest = src
 			return nil
 		}
 	}
