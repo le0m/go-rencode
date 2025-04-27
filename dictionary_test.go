@@ -68,6 +68,46 @@ func TestToStruct(t *testing.T) {
 	if err != nil {
 		t.Errorf("expected succcess but got %v", err)
 	}
+
+	var r struct {
+		Alpha *int
+		Beta  string
+		Gamma []uint8
+	}
+	var rd Dictionary
+	rd.Add("alpha", nil)
+	rd.Add("beta", "test")
+	rd.Add("gamma", nil)
+	err = rd.ToStruct(&r, "")
+	if err != nil {
+		t.Errorf("expected success but got %v", err)
+	}
+
+	type p struct {
+		Alpha int
+		Beta  string
+	}
+	type q struct {
+		Alpha int
+		Beta  *p
+	}
+	pc := p{}
+	qc := q{}
+	var pd Dictionary
+	pd.Add("alpha", int(67890))
+	pd.Add("beta", "test")
+	err = pd.ToStruct(&pc, "")
+	if err != nil {
+		t.Errorf("expected success but got %v", err)
+	}
+
+	var qd Dictionary
+	qd.Add("alpha", int(67890))
+	qd.Add("beta", pd)
+	err = qd.ToStruct(&qc, "")
+	if err != nil {
+		t.Errorf("expected success but got %v", err)
+	}
 }
 
 func TestExtraFieldsFailure(t *testing.T) {
